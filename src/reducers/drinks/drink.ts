@@ -1,12 +1,14 @@
 import {handleActions} from 'redux-actions';
+import Drinks from '../../entities/drinks/Drinks';
 import {
   fetchDrinkStart,
   fetchDrinkSuccess,
   fetchDrinkError,
+  cleanDrink,
 } from '../../actions/drink';
 
 export interface DrinkInitialState {
-  drinkData: object;
+  drinkData: Drinks;
   fetchDrinkIsLoading: boolean;
   fetchDrinkError: string;
 }
@@ -34,6 +36,7 @@ export default handleActions(
       fetchDrinkError: action.error,
       fetchDrinkIsLoading: false,
     }),
+    [cleanDrink as any]: () => DrinkInitialState,
   },
   DrinkInitialState,
 );

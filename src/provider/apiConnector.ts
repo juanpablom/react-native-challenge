@@ -46,7 +46,11 @@ export default class APIConnector {
   _timeout;
   _requestUpload: Function;
 
-  static _requestUpload(uri: string, options: Record<string, any>, uploadFormData: FormData) {
+  static _requestUpload(
+    uri: string,
+    options: Record<string, any>,
+    uploadFormData: FormData,
+  ) {
     const formData = uploadFormData;
     const time = +new Date();
 
@@ -62,18 +66,29 @@ export default class APIConnector {
       xhr.setRequestHeader('X-TrackingId', options.headers['X-TrackingId']);
       xhr.onload = () => {
         if (config.API_CONNECTOR_LOGS_ACTIVATED) {
-          logger.info(`request ${options.method}: ${uri} completed, took: ${+new Date() - time}ms`);
+          logger.info(
+            `request ${options.method}: ${uri} completed, took: ${+new Date() -
+              time}ms`,
+          );
         }
         if (xhr.status !== 200) {
-          reject(new Error(JSON.stringify({ code: xhr.status, message: xhr.responseText })));
+          reject(
+            new Error(
+              JSON.stringify({code: xhr.status, message: xhr.responseText}),
+            ),
+          );
         }
         if (!xhr.responseText) {
           console.log('Upload failed No response payload.'); // eslint-disable-line no-console
-          reject(new Error(JSON.stringify({ code: 500, message: xhr.responseText })));
+          reject(
+            new Error(JSON.stringify({code: 500, message: xhr.responseText})),
+          );
         }
         const index = xhr.responseText.indexOf('arcor.com');
         if (index !== -1) {
-          reject(new Error(JSON.stringify({ code: 500, message: xhr.responseText })));
+          reject(
+            new Error(JSON.stringify({code: 500, message: xhr.responseText})),
+          );
         }
         resolve(xhr.responseText);
       };
@@ -82,7 +97,7 @@ export default class APIConnector {
   }
 
   constructor(options: any = {}) {
-    const { timeout = 0 } = options;
+    const {timeout = 0} = options;
 
     this._fetch = fetch;
     this._timeout = null;
@@ -109,32 +124,32 @@ export default class APIConnector {
   }
 
   head(uri: string, args = {}): void {
-    return this._request(uri, { ...args, method: Methods.HEAD });
+    return this._request(uri, {...args, method: Methods.HEAD});
   }
 
   get(uri: string, args = {}): void {
-    return this._request(uri, { ...args, method: Methods.GET });
+    return this._request(uri, {...args, method: Methods.GET});
   }
 
   post(uri: string, args = {}): void {
-    return this._request(uri, { ...args, method: Methods.POST });
+    return this._request(uri, {...args, method: Methods.POST});
   }
 
   put(uri: string, args = {}): void {
-    return this._request(uri, { ...args, method: Methods.PUT });
+    return this._request(uri, {...args, method: Methods.PUT});
   }
 
   patch(uri: string, args = {}): void {
-    return this._request(uri, { ...args, method: Methods.PATCH });
+    return this._request(uri, {...args, method: Methods.PATCH});
   }
 
   delete(uri: string, args = {}): void {
-    return this._request(uri, { ...args, method: Methods.DELETE });
+    return this._request(uri, {...args, method: Methods.DELETE});
   }
 
   _request = (uri, args: any = {}) => {
-    const { method, headers = {}, body, emptyResponse, uploadFormData } = args;
-    let { checkResponseCode } = args;
+    const {method, headers = {}, body, emptyResponse, uploadFormData} = args;
+    let {checkResponseCode} = args;
 
     if (!uri || uri instanceof String) {
       if (config.API_CONNECTOR_LOGS_ACTIVATED) {
@@ -145,13 +160,15 @@ export default class APIConnector {
 
     const options = {
       method,
-      headers: { ...this._defaultHeaders, ...headers },
+      headers: {...this._defaultHeaders, ...headers},
       body,
     };
     if (!body) delete options.body;
 
     const time = +new Date();
-    const bodyLog = options.body ? ` & body: ${JSON.stringify(options.body).substr(0, 80)}...` : '';
+    const bodyLog = options.body
+      ? ` & body: ${JSON.stringify(options.body).substr(0, 80)}...`
+      : '';
     if (config.API_CONNECTOR_LOGS_ACTIVATED) {
       logger.info(
         `request ${options.method}: ${uri} sent, headers: ${JSON.stringify(
@@ -174,7 +191,9 @@ export default class APIConnector {
           const err: any = new TypeError(Errors.TIMEOUT_MSG);
           err.code = Errors.TIMEOUT;
           if (config.API_CONNECTOR_LOGS_ACTIVATED) {
-            logger.info(`request ${method}: ${uri} timeout after ${+new Date() - time}ms`);
+            logger.info(
+              `request ${method}: ${uri} timeout after ${+new Date() - time}ms`,
+            );
           }
           reject(err);
         }, this._timeout);
@@ -194,16 +213,27 @@ export default class APIConnector {
           requestDone = true;
           if (timeoutReached) return;
           if (config.API_CONNECTOR_LOGS_ACTIVATED) {
-            logger.info(`request ${method}: ${uri} completed, took: ${+new Date() - time}ms`);
+            logger.info(
+              `request ${method}: ${uri} completed, took: ${+new Date() -
+                time}ms`,
+            );
           }
 
           if (!response.ok && response.status === 503) {
-            reject(new Error(JSON.stringify({ code: 503, message: Errors.SERVERError_MSG })));
+            reject(
+              new Error(
+                JSON.stringify({code: 503, message: Errors.SERVERError_MSG}),
+              ),
+            );
           }
 
           if (response && response.status === Errors.NOT_FOUND) {
             checkResponseCode = true;
-            reject(new Error(JSON.stringify({ code: 404, message: Errors.NOT_FOUND_MSG })));
+            reject(
+              new Error(
+                JSON.stringify({code: 404, message: Errors.NOT_FOUND_MSG}),
+              ),
+            );
           }
 
           if (response && response.status === 500) {
@@ -266,7 +296,7 @@ export default class APIConnector {
             resolve({});
           } else {
             const responseBody = await response.json();
-            resolve({ ...responseBody, __ok: response.ok });
+            resolve({...responseBody});
           }
         })
 
@@ -282,7 +312,8 @@ export default class APIConnector {
           if (timeoutReached) return;
           if (config.API_CONNECTOR_LOGS_ACTIVATED) {
             logger.error(
-              `request ${method}: ${uri} raised error: ${err}, took ${+new Date() - time}ms`,
+              `request ${method}: ${uri} raised error: ${err}, took ${+new Date() -
+                time}ms`,
             );
           }
           if (err.message === Errors.NO_CONNECTION_MSG) {

@@ -1,17 +1,19 @@
 import React, {useState, useEffect} from 'react';
 import {connect} from 'react-redux';
-import {ScrollView, Text, Image, View, SafeAreaView} from 'react-native';
-import {SearchBar, Icon, ListItem} from 'react-native-elements';
+import {Text, View, SafeAreaView} from 'react-native';
+import {SearchBar, Icon} from 'react-native-elements';
 import State from '../../../reducers';
-import {fetchDrink, clearDrink} from '../../../actions/drink';
+import {fetchDrink, cleanDrink} from '../../../actions/drink';
 import Container from '../../../components/container';
 import {goToPage} from '../../../navigation';
-import {TextInput} from 'react-native-gesture-handler';
+import style from './styles';
+import List from '../../../components/list/List';
+import IDrinks from '../../../entities/drinks/IDrinks';
 
 interface Props {
   fetchDrink: Function;
-  clearDrink: Function;
-  drinkData: any;
+  cleanDrink: Function;
+  drinkData: IDrinks;
   fetchDrinkError: string;
   fetchDrinkIsLoading: boolean;
   navigation: any;
@@ -23,7 +25,7 @@ const FetchDrink = (props: Props) => {
     drinkData,
     fetchDrinkError,
     fetchDrinkIsLoading,
-    clearDrink,
+    cleanDrink,
   } = props;
   const [search, setSearch] = useState('');
 
@@ -40,18 +42,8 @@ const FetchDrink = (props: Props) => {
 
   return (
     <>
-      <SafeAreaView
-        style={{
-          width: '80%',
-          maxHeight: 100,
-          flexDirection: 'row',
-        }}>
-        <View
-          style={{
-            width: '20%',
-            height: '100%',
-            justifyContent: 'center',
-          }}>
+      <SafeAreaView style={style.navWrapper}>
+        <View style={style.backButtonWrapper}>
           <Icon
             name="arrow-left"
             type="font-awesome"
@@ -61,13 +53,13 @@ const FetchDrink = (props: Props) => {
         <SearchBar
           showLoading={fetchDrinkIsLoading}
           onChangeText={updateSearch}
-          onCancel={() => clearDrink()}
+          onCancel={() => cleanDrink()}
           value={search}
           platform="ios"
           cancelButtonTitle="Cancel"
-          cancelButtonProps={{color: '#DF3E3C'}}
+          cancelButtonProps={style.searchBarCancelButtonColor}
           placeholder="Search"
-          containerStyle={{backgroundColor: 'transparent'}}
+          containerStyle={style.searchBar}
         />
       </SafeAreaView>
 
@@ -75,34 +67,7 @@ const FetchDrink = (props: Props) => {
         {fetchDrinkIsLoading || fetchDrinkError ? (
           <Text>{fetchDrinkError}</Text>
         ) : (
-          <>
-            <ScrollView>
-              {!!drinkData &&
-                !!drinkData.drinks &&
-                drinkData.drinks.map((drink: any) => (
-                  <ListItem
-                    key={drink.idDrink}
-                    leftAvatar={{
-                      rounded: true,
-                      size: 'large',
-                      source: {
-                        uri: drink.strDrinkThumb,
-                      },
-                    }}
-                    title={drink.strDrink}
-                    titleStyle={{fontWeight: '500'}}
-                    chevron={{color: 'white'}}
-                    containerStyle={{
-                      marginLeft: 10,
-                      marginRight: 10,
-                      marginTop: 10,
-                      borderRadius: 10, // adds the rounded corners
-                      backgroundColor: '#fff',
-                    }}
-                  />
-                ))}
-            </ScrollView>
-          </>
+          <List list={!!drinkData && drinkData.drinks} />
         )}
       </Container>
     </>
@@ -117,7 +82,7 @@ const mapStateToProps = (state: State) => ({
 
 const mapDispatchToProps = (dispatch: Function) => ({
   fetchDrink: (search: String) => dispatch(fetchDrink(search)),
-  clearDrink: () => dispatch(clearDrink()),
+  cleanDrink: () => dispatch(cleanDrink()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(FetchDrink);
